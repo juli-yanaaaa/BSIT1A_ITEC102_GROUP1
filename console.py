@@ -2,9 +2,14 @@
 import csv
 import os
 
+# ==============================
+# GLOBAL VARIABLES AND CONSTANTS
+# ==============================
+
 students = []
 
-FILENAME = "student_records.csv"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FILENAME = os.path.join(BASE_DIR, "student_records.csv")
 
 QUIZ_WEIGHT = 0.20
 ASSIGNMENT_WEIGHT = 0.30
@@ -13,7 +18,7 @@ PASSING_GRADE = 75
 
 
 # ==============================
-# STUDENT NUMBER VALIDATION
+# INPUT VALIDATION
 # ==============================
 
 def get_student_number():
@@ -27,10 +32,6 @@ def get_student_number():
         else:
             return student_number
 
-
-# ==============================
-# GENERAL INPUT VALIDATION
-# ==============================
 
 def get_non_empty_input(prompt):
     while True:
@@ -57,7 +58,7 @@ def get_score(prompt):
 
 
 # ==============================
-# FIND STUDENT
+# STUDENT MANAGEMENT
 # ==============================
 
 def find_student(student_number):
@@ -68,25 +69,8 @@ def find_student(student_number):
     return None
 
 
-# ==============================
-# CALCULATE FINAL GRADE
-# ==============================
-
-def calculate_final_grade(quiz, assignment, exam):
-    return (
-        quiz * QUIZ_WEIGHT
-        + assignment * ASSIGNMENT_WEIGHT
-        + exam * EXAM_WEIGHT
-    )
-
-
-# ==============================
-# ADD STUDENT
-# ==============================
-
 def add_student():
     print("\n===== ADD STUDENT =====")
-    print("DEBUG: add_student() was called.")
 
     student_number = get_student_number()
 
@@ -110,16 +94,69 @@ def add_student():
     students.append(student)
 
     print("SUCCESS: Student added successfully.")
-    print("DEBUG: Total students:", len(students))
+    print("Total Students:", len(students))
+
+
+def edit_student():
+    print("\n===== EDIT STUDENT INFORMATION =====")
+
+    student_number = get_student_number()
+    student = find_student(student_number)
+
+    if student is None:
+        print("ERROR: Student not found.")
+        return
+
+    print("\nCurrent Name:", student["name"])
+    print("Current Section:", student["section"])
+
+    student["name"] = get_non_empty_input("Enter New Name: ")
+    student["section"] = get_non_empty_input("Enter New Section: ")
+
+    print("SUCCESS: Student information updated.")
+
+
+def delete_student():
+    print("\n===== DELETE STUDENT =====")
+
+    student_number = get_student_number()
+    student = find_student(student_number)
+
+    if student is None:
+        print("ERROR: Student not found.")
+        return
+
+    print("\nStudent:", student["name"])
+
+    confirmation = input(
+        "Are you sure you want to delete this student? (Y/N): "
+    ).strip().upper()
+
+    if confirmation == "Y":
+        students.remove(student)
+        print("SUCCESS: Student record deleted.")
+
+    elif confirmation == "N":
+        print("WARNING: Deletion cancelled.")
+
+    else:
+        print("ERROR: Invalid confirmation. Deletion cancelled.")
 
 
 # ==============================
-# RECORD OR UPDATE SCORES
+# GRADE MANAGEMENT
 # ==============================
+
+def calculate_final_grade(quiz, assignment, exam):
+    return (
+        quiz * QUIZ_WEIGHT
+        + assignment * ASSIGNMENT_WEIGHT
+        + exam * EXAM_WEIGHT
+    )
+
 
 def record_scores():
     print("\n===== RECORD STUDENT SCORES =====")
-    print("DEBUG: record_scores() was called.")
 
     student_number = get_student_number()
     student = find_student(student_number)
@@ -135,9 +172,7 @@ def record_scores():
     assignment = get_score("Enter Assignment Score: ")
     exam = get_score("Enter Exam Score: ")
 
-    final_grade = calculate_final_grade(
-        quiz, assignment, exam
-    )
+    final_grade = calculate_final_grade(quiz, assignment, exam)
 
     student["quiz"] = quiz
     student["assignment"] = assignment
@@ -154,13 +189,11 @@ def record_scores():
 
 
 # ==============================
-# DISPLAY ALL STUDENTS
+# DISPLAY AND SEARCH STUDENTS
 # ==============================
 
 def display_students():
     print("\n===== STUDENT RECORDS =====")
-    print("DEBUG: display_students() was called.")
-    print("DEBUG: Number of records:", len(students))
 
     if len(students) == 0:
         print("WARNING: No student records found.")
@@ -178,6 +211,7 @@ def display_students():
             print("Exam: Not yet recorded")
             print("Final Grade: PENDING")
             print("Status: PENDING")
+
         else:
             print("Quiz:", student["quiz"])
             print("Assignment:", student["assignment"])
@@ -189,16 +223,9 @@ def display_students():
             else:
                 print("Status: FAILED")
 
-    print("\nDEBUG: Finished displaying student records.")
-
-
-# ==============================
-# SEARCH STUDENT
-# ==============================
 
 def search_student():
     print("\n===== SEARCH STUDENT =====")
-    print("DEBUG: search_student() was called.")
 
     student_number = get_student_number()
     student = find_student(student_number)
@@ -214,62 +241,15 @@ def search_student():
 
     if student["final_grade"] is None:
         print("Final Grade: PENDING")
+        print("Status: PENDING")
+
     else:
         print(f"Final Grade: {student['final_grade']:.2f}")
 
-
-# ==============================
-# EDIT STUDENT INFORMATION
-# ==============================
-
-def edit_student():
-    print("\n===== EDIT STUDENT INFORMATION =====")
-    print("DEBUG: edit_student() was called.")
-
-    student_number = get_student_number()
-    student = find_student(student_number)
-
-    if student is None:
-        print("ERROR: Student not found.")
-        return
-
-    print("\nCurrent Name:", student["name"])
-    print("Current Section:", student["section"])
-
-    new_name = get_non_empty_input("Enter New Name: ")
-    new_section = get_non_empty_input("Enter New Section: ")
-
-    student["name"] = new_name
-    student["section"] = new_section
-
-    print("SUCCESS: Student information updated.")
-
-
-# ==============================
-# DELETE STUDENT
-# ==============================
-
-def delete_student():
-    print("\n===== DELETE STUDENT =====")
-    print("DEBUG: delete_student() was called.")
-
-    student_number = get_student_number()
-    student = find_student(student_number)
-
-    if student is None:
-        print("ERROR: Student not found.")
-        return
-
-    print("\nStudent:", student["name"])
-    confirmation = input("Are you sure you want to delete this student? (Y/N): ").strip().upper()
-
-    if confirmation == "Y":
-        students.remove(student)
-        print("SUCCESS: Student record deleted.")
-    elif confirmation == "N":
-        print("WARNING: Deletion cancelled.")
-    else:
-        print("ERROR: Invalid confirmation. Deletion cancelled.")
+        if student["final_grade"] >= PASSING_GRADE:
+            print("Status: PASSED")
+        else:
+            print("Status: FAILED")
 
 
 # ==============================
@@ -278,7 +258,6 @@ def delete_student():
 
 def class_summary():
     print("\n===== CLASS SUMMARY =====")
-    print("DEBUG: class_summary() was called.")
 
     if len(students) == 0:
         print("WARNING: No student records available.")
@@ -333,7 +312,6 @@ def class_summary():
 
 def sort_students():
     print("\n===== SORT STUDENTS =====")
-    print("DEBUG: sort_students() was called.")
 
     if len(students) == 0:
         print("WARNING: No student records to sort.")
@@ -357,32 +335,29 @@ def sort_students():
     students[:] = graded_students + pending_students
 
     print("SUCCESS: Students sorted by final grade.")
-    print("DEBUG: Pending students are placed at the bottom.")
+    print("Students with pending grades are placed at the bottom.")
 
     display_students()
 
 
 # ==============================
-# SAVE RECORDS TO CSV
+# CSV FILE MANAGEMENT
 # ==============================
 
 def save_records():
     print("\n===== SAVE RECORDS =====")
-    print("DEBUG: save_records() was called.")
 
-    file_path = os.path.abspath(FILENAME)
+    fieldnames = [
+        "student_number",
+        "name",
+        "section",
+        "quiz",
+        "assignment",
+        "exam",
+        "final_grade"
+    ]
 
     try:
-        fieldnames = [
-            "student_number",
-            "name",
-            "section",
-            "quiz",
-            "assignment",
-            "exam",
-            "final_grade"
-        ]
-
         with open(FILENAME, "w", newline="", encoding="utf-8") as file:
             writer = csv.DictWriter(file, fieldnames=fieldnames)
 
@@ -390,30 +365,20 @@ def save_records():
             writer.writerows(students)
 
         print("SUCCESS: Records saved successfully.")
-        print("Total records saved:", len(students))
-        print("CSV File Location:", file_path)
+        print("Total Records Saved:", len(students))
+        print("CSV File Location:", FILENAME)
 
     except PermissionError:
         print("ERROR: Cannot save the CSV file.")
-        print("Please close the CSV file if it is open in Excel.")
+        print("Please close the file if it is open in Excel.")
 
     except OSError as error:
         print("ERROR: An error occurred while saving.")
         print("Details:", error)
 
 
-# ==============================
-# LOAD RECORDS FROM CSV
-# ==============================
-
 def load_records():
     print("\n===== LOAD RECORDS =====")
-    print("DEBUG: load_records() was called.")
-
-    file_path = os.path.abspath(FILENAME)
-
-    print("DEBUG: Checking CSV file...")
-    print("CSV File Location:", file_path)
 
     if not os.path.exists(FILENAME):
         print("WARNING: CSV file does not exist yet.")
@@ -423,19 +388,19 @@ def load_records():
     loaded_students = []
     seen_numbers = set()
 
+    required_columns = {
+        "student_number",
+        "name",
+        "section",
+        "quiz",
+        "assignment",
+        "exam",
+        "final_grade"
+    }
+
     try:
         with open(FILENAME, "r", newline="", encoding="utf-8") as file:
             reader = csv.DictReader(file)
-
-            required_columns = {
-                "student_number",
-                "name",
-                "section",
-                "quiz",
-                "assignment",
-                "exam",
-                "final_grade"
-            }
 
             if reader.fieldnames is None:
                 print("ERROR: CSV file is empty or has no header.")
@@ -443,12 +408,14 @@ def load_records():
 
             if not required_columns.issubset(set(reader.fieldnames)):
                 print("ERROR: CSV file is missing required columns.")
-                print("Found columns:", reader.fieldnames)
-                print("Expected columns:", sorted(required_columns))
+                print("Found Columns:", reader.fieldnames)
                 return
 
             for row_number, row in enumerate(reader, start=2):
                 try:
+                    if not any(row.values()):
+                        continue
+
                     student_number = row["student_number"].strip()
                     name = row["name"].strip()
                     section = row["section"].strip()
@@ -471,7 +438,6 @@ def load_records():
                     exam_text = row["exam"].strip()
                     grade_text = row["final_grade"].strip()
 
-                    # All scores and grade must be blank for a pending student.
                     if not quiz_text and not assignment_text and not exam_text and not grade_text:
                         quiz = None
                         assignment = None
@@ -499,8 +465,8 @@ def load_records():
 
                             if abs(saved_grade - final_grade) > 0.01:
                                 print(
-                                    f"WARNING: Row {row_number} final grade "
-                                    "does not match the calculated grade. "
+                                    f"WARNING: Row {row_number} has an "
+                                    "incorrect saved final grade. "
                                     "The calculated grade will be used."
                                 )
 
@@ -517,7 +483,7 @@ def load_records():
                     loaded_students.append(student)
                     seen_numbers.add(student_number)
 
-                except (ValueError, TypeError) as error:
+                except (ValueError, TypeError, AttributeError) as error:
                     print(f"ERROR: Could not load CSV row {row_number}.")
                     print("Details:", error)
 
@@ -525,11 +491,11 @@ def load_records():
         students.extend(loaded_students)
 
         print("\nSUCCESS: CSV loading completed.")
-        print("Total records loaded:", len(students))
-        print("CSV File Location:", file_path)
+        print("Total Records Loaded:", len(students))
+        print("CSV File Location:", FILENAME)
 
         if len(students) == 0:
-            print("WARNING: The CSV file contains no valid student records.")
+            print("WARNING: No valid student records found in the CSV file.")
 
     except PermissionError:
         print("ERROR: Cannot access the CSV file.")
@@ -541,18 +507,17 @@ def load_records():
 
 
 # ==============================
-# MAIN MENU
+# MAIN PROGRAM
 # ==============================
 
 def main():
-    print("DEBUG: Program started.")
-    print("DEBUG: Loading saved records...")
+    print("===== STUDENT GRADE MANAGEMENT SYSTEM =====")
 
     load_records()
 
     while True:
         print("\n================================")
-        print("     STUDENT GRADE SYSTEM")
+        print("       STUDENT GRADE SYSTEM")
         print("================================")
         print("1. Add Student")
         print("2. Record / Update Scores")
@@ -568,8 +533,6 @@ def main():
         print("================================")
 
         choice = input("Enter your choice: ").strip()
-
-        print("DEBUG: Menu choice entered:", choice)
 
         if choice == "1":
             add_student()
@@ -602,9 +565,8 @@ def main():
             load_records()
 
         elif choice == "11":
-            print("\nDEBUG: Saving records before exit...")
+            print("\nSaving records before exiting...")
             save_records()
-
             print("SUCCESS: Program closed.")
             break
 
@@ -615,7 +577,7 @@ def main():
 
 
 # ==============================
-# PROGRAM START
+# PROGRAM EXECUTION
 # ==============================
 
 if __name__ == "__main__":
